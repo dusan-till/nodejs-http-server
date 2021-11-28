@@ -1,0 +1,23 @@
+{
+  "name": "nodejs-http-server",
+  "version": "1.0.0",
+  "description": "An HTTP Server running on NodeJS",
+  "main": "main.js",
+  "scripts": {
+    "test": "node server-test.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dusan-till/nodejs-http-server.git"
+  },
+  "keywords": [
+    "server",
+    "http"
+  ],
+  "author": "Dušan Till",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/dusan-till/nodejs-http-server/issues"
+  },
+  "homepage": "https://github.com/dusan-till/nodejs-http-server#readme"
+}
