@@ -1,5 +1,5 @@
-# nodejs-http-server
-An HTTP Server running on NodeJS
+# nodejs-http-server-dev
+An HTTP Server running on NodeJS [dev]
 
 ## Updates
 ### dev1.0.1
