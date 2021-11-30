@@ -2,6 +2,8 @@ const http = require('http');
 const fs = require('fs/promises');
 const path = require('path');
 const url = require('url');
+const vm = require('vm');
+
 const port = 8080;
 const content_types = {
     ".css": "text/css",
@@ -24,40 +26,53 @@ const content_types = {
 
 const requestListener = async function (req, res) {
     //parsing request
-    let path_ = __dirname + "/http" + url.parse(req.url, `http://${req.headers.host}`).pathname;
+    const path_ = __dirname + "/http" + new url.URL(req.url, `http://${req.headers.host}`).pathname;
 
-    //finding the file
-    let notfound = false;
-    let file;
+    let stat;
+
     try {
-        let stat = await fs.stat(path_);
-        if(stat.isDirectory()) {
-            if(path_[path_.length-1] == path.delimiter) {
-                path_ += "index.html";
-            } else {
-                path_ += "/index.html";
-            }
-        } else if(stat.isFile()) {
-            file = await fs.readFile(path_);
-        } else {
-            file = "";
-            notfound = true;
-        }
+        stat = await fs.stat(path_);
     }
     catch(err) {
-        console.log(err.code);
-        file = "";
-        notfound = true;
+        res.writeHead(404);
+        res.end();
+        return
     }
 
-    //sending response
-    res.setHeader("Content-Type", content_types[path.extname(path_)] || "text/plain");
-    if(notfound) {
-        res.writeHead(404);
-    } else {
+    if(stat.isFile()) {
+        let file;
+
+        try {
+            file = await fs.readFile(path_);
+        }
+        catch(err) {
+            res.writeHead(404);
+            res.end();
+            return
+        }
+
+        res.setHeader("Content-Type", content_types[path.extname(path_)] || "text/plain");
         res.writeHead(200);
+        res.end(file);
+    } else if(stat.isDirectory()) {
+        try {
+            let context = {req, res}
+            vm.createContext(context);
+
+            const code = await fs.readFile(path_ + "/index.js");
+            vm.runInContext(code, context);
+
+            res = context.res;
+        }
+        catch(err) {
+            res.writeHead(404);
+            res.end();
+            return
+        }
+    } else {
+        res.writeHead(404);
+        res.end();
     }
-    res.end(file);
 }
 
 const server = http.createServer(requestListener);
