@@ -1,6 +1,6 @@
 {
   "name": "nodejs-http-server-dev",
-  "version": "dev1.0.3",
+  "version": "dev1.0.4",
   "description": "An HTTP Server running on NodeJS [dev]",
   "main": "main.js",
   "scripts": {

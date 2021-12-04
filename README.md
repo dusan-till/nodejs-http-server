@@ -2,8 +2,11 @@
 An HTTP Server running on NodeJS [dev]
 
 ## Updates
+* ### dev1.0.4
+  * Server is now configurable through the "config.json" file
+  * Made more parameters accessible to dynamic websites
 * ### dev1.0.3
-  * Added suport for serverside javascript generated sites
+  * Added suport for dynamic websites using javascript
 * ### dev1.0.2
   * Better file reading
   * Automaticaly substitutes paths leading to a directory with that directory's index.html file

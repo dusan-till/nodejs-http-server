@@ -4,7 +4,8 @@ const path = require('path');
 const url = require('url');
 const vm = require('vm');
 
-const port = 8080;
+const configpath = "./config.json"
+
 const content_types = {
     ".css": "text/css",
     ".html": "text/html",
@@ -26,14 +27,14 @@ const content_types = {
 
 const requestListener = async function (req, res) {
     //parsing request
-    const path_ = __dirname + "/http" + new url.URL(req.url, `http://${req.headers.host}`).pathname;
+    const curURL = new url.URL(req.url, `http://${req.headers.host}`)
+    const path_ = "./http" + curURL.pathname;
 
     let stat;
 
     try {
         stat = await fs.stat(path_);
-    }
-    catch(err) {
+    } catch(err) {
         res.writeHead(404);
         res.end();
         return
@@ -44,8 +45,7 @@ const requestListener = async function (req, res) {
 
         try {
             file = await fs.readFile(path_);
-        }
-        catch(err) {
+        } catch(err) {
             res.writeHead(404);
             res.end();
             return
@@ -56,15 +56,14 @@ const requestListener = async function (req, res) {
         res.end(file);
     } else if(stat.isDirectory()) {
         try {
-            let context = {req, res}
+            let context = {req, res, curURL, path_}
             vm.createContext(context);
 
             const code = await fs.readFile(path_ + "/index.js");
             vm.runInContext(code, context);
 
             res = context.res;
-        }
-        catch(err) {
+        } catch(err) {
             res.writeHead(404);
             res.end();
             return
@@ -75,5 +74,19 @@ const requestListener = async function (req, res) {
     }
 }
 
-const server = http.createServer(requestListener);
-server.listen(port);
+const start = async () => {
+    const server = http.createServer(requestListener);
+    let config
+    try{
+        config = await fs.readFile(configpath);
+        config = JSON.parse(config);
+        if(!config.port) {config.port = 8080}
+        if(!config.host) {config.host = "0.0.0.0"}
+    }
+    catch(err) {
+        config = {port: 8080, host: "0.0.0.0"}
+    }
+    server.listen(config.port, config.host);
+}
+
+start()
